@@ -1,0 +1,16 @@
+{
+  "name": "bge",
+  "version": "1.0.0",
+  "description": "implementation of a battleship game engine",
+  "main": "src/ui.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "app-ideas",
+    "battleship",
+    "bge"
+  ],
+  "author": "Thomas Berthaud",
+  "license": "ISC"
+}
