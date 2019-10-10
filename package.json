@@ -12,5 +12,9 @@
     "bge"
   ],
   "author": "Thomas Berthaud",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "prompt": "^1.0.0"
+  }
 }

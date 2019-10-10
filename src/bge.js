@@ -38,7 +38,7 @@ function startGame() {
     }
   });
 
-  return map;
+  return computeStats();
 
   function isPosAvailable(ship, position, direction) {
     if (direction === "h") {
@@ -56,20 +56,22 @@ function startGame() {
 
 function shoot(x, y) {
   const shipPart = shipParts.get(`${x}-${y}`);
-  const stats = { hitAndMisses, map };
+  let hit;
   if (shipPart) {
     shipPart.hit = true;
     hitAndMisses[y][x] = "X";
-    stats.hit = true;
+    hit = true;
   } else {
     hitAndMisses[y][x] = "O";
-    stats.hit = false;
+    hit = false;
   }
-  stats.shipsLeft = new Set(
-    [...shipParts.values()].filter(shipPart => !shipPart.hit).map(shipPart => shipPart.name)
-  ).size;
+  return computeStats({ hit });
+}
 
-  return stats;
+function computeStats(props) {
+  const shipsLeft = new Set([...shipParts.values()].filter(shipPart => !shipPart.hit).map(shipPart => shipPart.name))
+    .size;
+  return { hitAndMisses, map, shipsLeft, ...props };
 }
 
 // UTILITIES

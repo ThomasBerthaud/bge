@@ -20,12 +20,12 @@ implementation of an app idea from [app-ideas](https://github.com/florinpop17/ap
 
 ### Text-based Presentation Layer
 
-- [ ] User can see the hits and misses array displayed as a 2 dimensional character representation of the game board returned by the `startGame()` function.
-- [ ] User can be prompted to enter the coordinates of a target square on the game board.
-- [ ] User can see an updated hits and misses array display after taking a shot.
-- [ ] User can see a message after each shot indicating whether the shot resulted in a hit or miss.
-- [ ] User can see an congratulations message after the shot that sinks the last remaining ship.
-- [ ] User can be prompted to play again at the end of each game. Declining to play again stops the game.
+- [x] User can see the hits and misses array displayed as a 2 dimensional character representation of the game board returned by the `startGame()` function.
+- [x] User can be prompted to enter the coordinates of a target square on the game board.
+- [x] User can see an updated hits and misses array display after taking a shot.
+- [x] User can see a message after each shot indicating whether the shot resulted in a hit or miss.
+- [x] User can see an congratulations message after the shot that sinks the last remaining ship.
+- [x] User can be prompted to play again at the end of each game. Declining to play again stops the game.
 
 ## Bonus features
 
