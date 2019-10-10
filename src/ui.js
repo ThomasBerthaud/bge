@@ -15,6 +15,7 @@ console.log(colors.blue("------- BATTLESHIP -------"));
 console.log("Welcome to battleship game");
 console.log("The coordinates x=0, y=0 corresponds to the top left cell.");
 console.log("X designates a successful shot, O designates a missed shot");
+console.log("at any time you can type 'stats' to display current's game stats");
 gameLoop().then(() => console.log("Thanks for playing !"));
 
 async function gameLoop() {
@@ -23,11 +24,17 @@ async function gameLoop() {
   do {
     const { width, height } = await promptBoardSize();
     gameState = bge.startGame({ width, height });
+    displayBoard(gameState);
     do {
-      displayBoard(gameState);
       const coordinates = await promptCoordinates();
-      gameState = bge.shoot(coordinates[0], coordinates[1]);
-      console.log(gameState.hit ? colors.green("HIT !!") : colors.red("miss..."));
+      if (coordinates[0] === "stats") {
+        const stats = bge.gameStats();
+        console.log(`nb turns: ${stats.nbTurns}, nb hits: ${stats.nbHits}, nb misses: ${stats.nbMisses}`);
+      } else {
+        gameState = bge.shoot(coordinates[0], coordinates[1]);
+        console.log(gameState.hit ? colors.green("HIT !!") : colors.red("miss..."));
+        displayBoard(gameState);
+      }
     } while (gameState.shipsLeft > 0);
 
     console.log("Congratulations, you won !!");
@@ -71,9 +78,10 @@ async function promptCoordinates() {
   const positionSchema = {
     properties: {
       coordinates: {
-        message: `input must be two numbers separated by a space`,
+        message: `input must be two numbers separated by a space or 'stats' to display game stats`,
         required: true,
         conform(coordinates) {
+          if (coordinates === "stats") return true;
           const [width, height] = prompt.history("boardSize").value.split(" ");
           const [x, y] = coordinates.split(" ");
           return x < width && y < height;

@@ -3,6 +3,7 @@ const GAME_W = 8;
 const SHIPS_INFO = [{ name: "Destroyer", size: 2 }, { name: "Cruiser", size: 3 }, { name: "Battleship", size: 4 }];
 
 let map, shipParts, hitAndMisses;
+let nbTurns, nbHits, nbMisses;
 
 function startGame({ width = GAME_W, height = GAME_H } = {}) {
   (map = []), (hitAndMisses = []);
@@ -11,6 +12,7 @@ function startGame({ width = GAME_W, height = GAME_H } = {}) {
     hitAndMisses[i] = Array(width).fill(" ");
   }
   shipParts = new Map();
+  nbTurns = nbHits = nbMisses = 0;
 
   //for each type of ship place it on the map
   SHIPS_INFO.forEach(ship => {
@@ -61,10 +63,13 @@ function shoot(x, y) {
     shipPart.hit = true;
     hitAndMisses[y][x] = "X";
     hit = true;
+    nbHits++;
   } else {
     hitAndMisses[y][x] = "O";
     hit = false;
+    nbMisses++;
   }
+  nbTurns++;
   return computeStats({ hit });
 }
 
@@ -74,7 +79,9 @@ function computeStats(props) {
   return { hitAndMisses, map, shipsLeft, ...props };
 }
 
-function gameStats() {}
+function gameStats() {
+  return { nbTurns, nbHits, nbMisses };
+}
 
 // UTILITIES
 function rand(min, max) {
