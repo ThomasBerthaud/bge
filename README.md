@@ -2,6 +2,11 @@
 
 implementation of an app idea from [app-ideas](https://github.com/florinpop17/app-ideas/blob/master/Projects/3-Advanced/Battleship-Game-Engine.md)
 
+## How to use
+
+- run : `npm install`
+- to launch command prompt: `node src/ui.js`
+
 ## User Stories
 
 ### BGE
