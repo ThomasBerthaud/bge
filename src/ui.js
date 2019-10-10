@@ -13,7 +13,7 @@ prompt.message = "";
 
 console.log(colors.blue("------- BATTLESHIP -------"));
 console.log("Welcome to battleship game");
-console.log("This game is played on an 8x8 board. The coordinates x=0, y=0 corresponds to the top left cell.");
+console.log("The coordinates x=0, y=0 corresponds to the top left cell.");
 console.log("X designates a successful shot, O designates a missed shot");
 gameLoop().then(() => console.log("Thanks for playing !"));
 
@@ -21,7 +21,8 @@ async function gameLoop() {
   let gameState;
   let replay = "y";
   do {
-    gameState = bge.startGame();
+    const { width, height } = await promptBoardSize();
+    gameState = bge.startGame({ width, height });
     do {
       displayBoard(gameState);
       const coordinates = await promptCoordinates();
@@ -42,13 +43,41 @@ function displayBoard({ hitAndMisses }) {
   console.log(colors.yellow("-".repeat(hitAndMisses.length + 2)));
 }
 
+async function promptBoardSize() {
+  const boardSizeSchema = {
+    properties: {
+      boardSize: {
+        description: "choose a board size",
+        message: "input must be two numbers (minimum 4) separated by a space",
+        default: "8 8",
+        conform(boardSize) {
+          const [width, height] = boardSize.split(" ");
+          return width >= 4 && height >= 4;
+        }
+      }
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    prompt.get(boardSizeSchema, (err, result) => {
+      if (err) reject(err);
+      const [width, height] = result.boardSize.split(" ").map(nb => Number(nb));
+      resolve({ width, height });
+    });
+  });
+}
+
 async function promptCoordinates() {
   const positionSchema = {
     properties: {
       coordinates: {
-        pattern: /^[0-8]{1} [0-8]{1}$/,
-        message: "input must be two number (between 0 and 8) separated by a space",
-        required: true
+        message: `input must be two numbers separated by a space`,
+        required: true,
+        conform(coordinates) {
+          const [width, height] = prompt.history("boardSize").value.split(" ");
+          const [x, y] = coordinates.split(" ");
+          return x < width && y < height;
+        }
       }
     }
   };

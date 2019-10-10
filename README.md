@@ -36,7 +36,7 @@ implementation of an app idea from [app-ideas](https://github.com/florinpop17/ap
 
 ### BGE
 
-- [ ] Caller can specify the number of rows and columns in the game board as a parameter to the `startGame()` function.
+- [x] Caller can specify the number of rows and columns in the game board as a parameter to the `startGame()` function.
 - [ ] Caller can invoke a `gameStats()` function that returns a Javascript object containing metrics for the current game. For example, number of turns played, current number of hits and misses, etc.
 - [ ] Caller can specify the number of players (1 or 2) when calling `startGame()` which will generate one board for each player randomly populated with ships.
 
@@ -44,6 +44,7 @@ implementation of an app idea from [app-ideas](https://github.com/florinpop17/ap
 
 ### Text-based Presentation Layer
 
+- [x] (Custom Bonus) User is prompted to enter a custom board size when starting a new game.
 - [ ] User can see the current game statics at any point by entering the phrase `stats` in place of target coordinates. (Note that this requires the `gameStats()` function in the BGE)
 - [ ] User can specify a two player game is to be played, with each player alternating turns in the same terminal session (Note that this requires corresponding Bonus Features in the BGE)
 - [ ] User can see the player number in prompts associated with the inputs in each turn.

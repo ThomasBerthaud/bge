@@ -4,11 +4,11 @@ const SHIPS_INFO = [{ name: "Destroyer", size: 2 }, { name: "Cruiser", size: 3 }
 
 let map, shipParts, hitAndMisses;
 
-function startGame() {
+function startGame({ width = GAME_W, height = GAME_H } = {}) {
   (map = []), (hitAndMisses = []);
-  for (let i = 0; i < GAME_H; i++) {
-    map[i] = Array(GAME_W).fill("-");
-    hitAndMisses[i] = Array(GAME_W).fill(" ");
+  for (let i = 0; i < height; i++) {
+    map[i] = Array(width).fill("-");
+    hitAndMisses[i] = Array(width).fill(" ");
   }
   shipParts = new Map();
 
@@ -19,8 +19,8 @@ function startGame() {
     do {
       direction = Math.random() > 0.5 ? "h" : "v";
       position = {
-        x: rand(0, GAME_W - 1 - (direction === "h" ? ship.size : 0)),
-        y: rand(0, GAME_H - 1 - (direction === "v" ? ship.size : 0))
+        x: rand(0, width - 1 - (direction === "h" ? ship.size : 0)),
+        y: rand(0, height - 1 - (direction === "v" ? ship.size : 0))
       };
       //check if no overlap with another ship
       if (isPosAvailable(ship, position, direction)) done = true;
@@ -74,9 +74,11 @@ function computeStats(props) {
   return { hitAndMisses, map, shipsLeft, ...props };
 }
 
+function gameStats() {}
+
 // UTILITIES
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-module.exports = { startGame, shoot };
+module.exports = { startGame, shoot, gameStats };
