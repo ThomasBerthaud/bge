@@ -24,27 +24,30 @@ async function gameLoop() {
   do {
     const { width, height, nbPlayers } = await promptGameParams();
     gameState = bge.startGame({ width, height, nbPlayers });
-    const playersBoard = gameState;
-    gameState.shipsLeft = Infinity; // to avoid exiting game when user type stats on first round
 
     displayAllBoards(gameState);
     do {
-      const playerNb = bge.gameStats().nbTurns % 2 === 0 ? 1 : 2;
+      const playerNb = nbPlayers > 1 ? (bge.gameStats().nbTurns % 2 === 0 ? 1 : 2) : 1;
       const coordinates = await promptCoordinates(playerNb);
       if (coordinates[0] === "stats") {
         const stats = bge.gameStats(playerNb);
         const turnNb = Math.floor(stats.nbTurns / nbPlayers) + 1;
         console.log(`nb turns: ${turnNb}, nb hits: ${stats.nbHits}, nb misses: ${stats.nbMisses}`);
       } else {
-        gameState = bge.shoot(coordinates[0], coordinates[1], playerNb);
-        console.log(gameState.hit ? colors.green("HIT !!") : colors.red("miss..."));
-        playersBoard[playerNb - 1] = { hitAndMisses: gameState.hitAndMisses };
+        const playerState = bge.shoot(coordinates[0], coordinates[1], playerNb);
+        console.log(playerState.hit ? colors.green("HIT !!") : colors.red("miss..."));
+        Object.assign(gameState[playerNb - 1], playerState);
         const nextPlayerNb = bge.gameStats().nbTurns % 2 === 0 ? 1 : 2;
-        displayAllBoards(playersBoard, nextPlayerNb);
+        displayAllBoards(gameState, nextPlayerNb);
       }
-    } while (gameState.shipsLeft > 0);
+    } while (gameState.every(player => player.shipsLeft > 0));
 
-    console.log("Congratulations, you won !!");
+    if (nbPlayers <= 1) {
+      console.log("Congratulations, you won !!");
+    } else {
+      const winnerIndex = gameState.findIndex(player => player.shipsLeft === 0);
+      console.log(`Congratulation player ${winnerIndex + 1}, you won !!!`);
+    }
     replay = await promptForReplay();
   } while (replay === "y");
 }
@@ -61,16 +64,6 @@ function displayAllBoards(players, playerNb = 1) {
     console.log(players.reduce((line, player) => (line += boardLine(player.hitAndMisses[i]) + "  "), ""));
   }
   console.log(line);
-}
-
-// TODO decaler le board en fonction du joueur en train de jouer
-function displayBoard(gameState, playerNb) {
-  const { hitAndMisses } = gameState;
-  console.log(boardLimit(hitAndMisses.length));
-  for (let i = 0; i < hitAndMisses.length; i++) {
-    console.log(boardLine(hitAndMisses[i]));
-  }
-  console.log(boardLimit(hitAndMisses.length));
 }
 
 function boardLimit(boardLength) {
@@ -95,7 +88,7 @@ async function promptGameParams() {
       playerMode: {
         description: "Do you want to start a 2 players game ? (y|n)",
         pattern: /y|n|[yes]|[no]/,
-        default: "n",
+        required: true,
         before(value) {
           return value === "y" ? 2 : 1;
         }
