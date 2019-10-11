@@ -2,85 +2,101 @@ const GAME_H = 8;
 const GAME_W = 8;
 const SHIPS_INFO = [{ name: "Destroyer", size: 2 }, { name: "Cruiser", size: 3 }, { name: "Battleship", size: 4 }];
 
-let map, shipParts, hitAndMisses;
-let nbTurns, nbHits, nbMisses;
+let players, nbTurns;
 
-function startGame({ width = GAME_W, height = GAME_H } = {}) {
-  (map = []), (hitAndMisses = []);
-  for (let i = 0; i < height; i++) {
-    map[i] = Array(width).fill("-");
-    hitAndMisses[i] = Array(width).fill(" ");
-  }
-  shipParts = new Map();
-  nbTurns = nbHits = nbMisses = 0;
-
-  //for each type of ship place it on the map
-  SHIPS_INFO.forEach(ship => {
-    let done = false;
-    let direction, position;
-    do {
-      direction = Math.random() > 0.5 ? "h" : "v";
-      position = {
-        x: rand(0, width - 1 - (direction === "h" ? ship.size : 0)),
-        y: rand(0, height - 1 - (direction === "v" ? ship.size : 0))
-      };
-      //check if no overlap with another ship
-      if (isPosAvailable(ship, position, direction)) done = true;
-    } while (!done);
-
-    //add ship to the map
-    for (let i = 0; i < ship.size; i++) {
-      if (direction === "h") {
-        map[position.y][position.x + i] = "X";
-        shipParts.set(`${position.x + i}-${position.y}`, { x: position.x + i, y: position.y, hit: false, ...ship });
-      } else {
-        map[position.y + i][position.x] = "X";
-        shipParts.set(`${position.x}-${position.y + i}`, { x: position.x, y: position.y + i, hit: false, ...ship });
-      }
+function startGame({ width = GAME_W, height = GAME_H, nbPlayers = 1 } = {}) {
+  players = [];
+  nbTurns = 0;
+  for (let i = 0; i < nbPlayers; i++) {
+    const board = [];
+    const shipParts = new Map();
+    const hitAndMisses = [];
+    for (let i = 0; i < height; i++) {
+      board[i] = Array(width).fill("-");
+      hitAndMisses[i] = Array(width).fill(" ");
     }
-  });
 
-  return computeStats();
+    //for each type of ship place it on the map
+    SHIPS_INFO.forEach(ship => {
+      let direction, position;
+      do {
+        direction = Math.random() > 0.5 ? "h" : "v";
+        position = {
+          x: rand(0, width - 1 - (direction === "h" ? ship.size : 0)),
+          y: rand(0, height - 1 - (direction === "v" ? ship.size : 0))
+        };
+        //check if no overlap with another ship
+      } while (!isPosAvailable(board, ship, position, direction));
 
-  function isPosAvailable(ship, position, direction) {
+      //add ship to the map
+      for (let i = 0; i < ship.size; i++) {
+        if (direction === "h") {
+          board[position.y][position.x + i] = "X";
+          shipParts.set(`${position.x + i}-${position.y}`, { x: position.x + i, y: position.y, hit: false, ...ship });
+        } else {
+          board[position.y + i][position.x] = "X";
+          shipParts.set(`${position.x}-${position.y + i}`, { x: position.x, y: position.y + i, hit: false, ...ship });
+        }
+      }
+    });
+
+    players.push({ hitAndMisses, board, shipParts, nbHits: 0, nbMisses: 0 });
+  }
+
+  return players.map(player => ({
+    board: player.board,
+    hitAndMisses: player.hitAndMisses,
+    shipsLeft: getShipsLeft(player.shipParts)
+  }));
+
+  function isPosAvailable(board, ship, position, direction) {
     if (direction === "h") {
       for (let i = 0; i < ship.size; i++) {
-        if (map[position.y][position.x + i] === "X") return false;
+        if (board[position.y][position.x + i] === "X") return false;
       }
     } else {
       for (let i = 0; i < ship.size; i++) {
-        if (map[position.y + i][position.x] === "X") return false;
+        if (board[position.y + i][position.x] === "X") return false;
       }
     }
     return true;
   }
 }
 
-function shoot(x, y) {
-  const shipPart = shipParts.get(`${x}-${y}`);
+function shoot(x, y, playerNb = 1) {
+  const player = players[playerNb - 1];
+  const shipPart = player.shipParts.get(`${x}-${y}`);
   let hit;
   if (shipPart) {
     shipPart.hit = true;
-    hitAndMisses[y][x] = "X";
+    player.hitAndMisses[y][x] = "X";
     hit = true;
-    nbHits++;
+    player.nbHits++;
   } else {
-    hitAndMisses[y][x] = "O";
+    player.hitAndMisses[y][x] = "O";
     hit = false;
-    nbMisses++;
+    player.nbMisses++;
   }
   nbTurns++;
-  return computeStats({ hit });
+
+  return {
+    board: player.board,
+    hitAndMisses: player.hitAndMisses,
+    shipsLeft: getShipsLeft(player.shipParts),
+    hit
+  };
 }
 
-function computeStats(props) {
-  const shipsLeft = new Set([...shipParts.values()].filter(shipPart => !shipPart.hit).map(shipPart => shipPart.name))
-    .size;
-  return { hitAndMisses, map, shipsLeft, ...props };
+function getShipsLeft(shipParts) {
+  return new Set([...shipParts.values()].filter(shipPart => !shipPart.hit).map(shipPart => shipPart.name)).size;
 }
 
-function gameStats() {
-  return { nbTurns, nbHits, nbMisses };
+function gameStats(playerNb = 1) {
+  return {
+    nbTurns,
+    nbHits: players[playerNb - 1].nbHits,
+    nbMisses: players[playerNb - 1].nbMisses
+  };
 }
 
 // UTILITIES
